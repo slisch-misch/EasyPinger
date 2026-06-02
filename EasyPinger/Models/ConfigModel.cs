@@ -16,23 +16,15 @@ namespace EasyPinger.Models
         {
             return JsonConvert.SerializeObject(this);
         }
-
-        public void Generate()
-        {
-            this.TimeOut = 3600;
-            this.Services = new Service[1];
-            this.Services[0].DisplayName = "Яндекс";
-            this.Services[0].InternetAddress = "ya.ru";
-        }
+       
     }
 
     public class Service
     {
-        public Service (string ip, string name, int tries)
+        public Service (string ip, string name)
         {
             InternetAddress = ip;
             DisplayName = name;
-            TriesCounter = tries;
         }
 
         public string InternetAddress { get; set; }
