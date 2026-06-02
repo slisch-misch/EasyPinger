@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EasyPinger.Helper
 {
-    internal class ConfigGenerator
+    internal static class ConfigGenerator
     {
         public static ConfigModel Generate()
         {
@@ -26,32 +26,30 @@ namespace EasyPinger.Helper
 
         public static async Task<ConfigModel> GetConfigAsync()
         {
-            using (FileStream fstream = new FileStream("config.txt", FileMode.OpenOrCreate))
+            await using FileStream fstream = new FileStream("config.txt", FileMode.OpenOrCreate);
+            if (fstream.Length == 0)
             {
-                if (fstream.Length == 0)
-                {
-                    var config = ConfigGenerator.Generate();
-                    Console.WriteLine("Конфигурация не найдена.");
+                var config = Generate();
+                Console.WriteLine("Конфигурация не найдена.");
 
-                    // преобразуем строку в байты
-                    byte[] buffer = Encoding.Default.GetBytes(config.ToString());
-                    // запись массива байтов в файл
-                    await fstream.WriteAsync(buffer, 0, buffer.Length);
-                    Console.WriteLine("Конфигурация создана.");
-                    return config;
-                }
-                else
-                {
-                    // выделяем массив для считывания данных из файла
-                    byte[] buffer = new byte[fstream.Length];
-                    // считываем данные
-                    fstream.Read(buffer, 0, buffer.Length);
-                    // декодируем байты в строку
-                    var textFromFile = Encoding.Default.GetString(buffer);
-                    var config = JsonConvert.DeserializeObject<ConfigModel>(textFromFile);
-                    Console.WriteLine($"Конфигурация получена.");
-                    return config;
-                }
+                // преобразуем строку в байты
+                byte[] buffer = Encoding.Default.GetBytes(config.ToString());
+                // запись массива байтов в файл
+                await fstream.WriteAsync(buffer, 0, buffer.Length);
+                Console.WriteLine("Конфигурация создана.");
+                return config;
+            }
+            else
+            {
+                // выделяем массив для считывания данных из файла
+                byte[] buffer = new byte[fstream.Length];
+                // считываем данные
+                fstream.Read(buffer, 0, buffer.Length);
+                // декодируем байты в строку
+                var textFromFile = Encoding.Default.GetString(buffer);
+                var config = JsonConvert.DeserializeObject<ConfigModel>(textFromFile);
+                Console.WriteLine($"Конфигурация получена.");
+                return config;
             }
         }
     }
