@@ -6,6 +6,8 @@ namespace EasyPinger.Models
     {
         public static async Task Write(string message)
         {
+            Console.WriteLine(message);
+
             var fileName = $"logs_{DateTime.Now.ToShortDateString()}.txt";
             await using (FileStream fstream = new FileStream(fileName, FileMode.OpenOrCreate))
             {
@@ -22,7 +24,6 @@ namespace EasyPinger.Models
 
             await using (FileStream fstream = new FileStream(fileName, FileMode.Append, FileAccess.Write))
             {
-                Console.WriteLine("Журнал найден.");
                 string messageWithNewLine = message + Environment.NewLine;
                 byte[] buffer = Encoding.Default.GetBytes(messageWithNewLine);
                 await fstream.WriteAsync(buffer, 0, buffer.Length);

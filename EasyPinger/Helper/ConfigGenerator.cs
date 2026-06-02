@@ -17,12 +17,15 @@ namespace EasyPinger.Helper
             config.TimeOut = 60000;
             config.Mode = NotificationMode.AllMessages;
             config.Services = new Service[2];
+            config.TriesCounter = 3;
             var yandex = new Service("https://ya.ru/", "Яндекс");
             config.Services[0] = yandex;
             var google = new Service("https://www.google.com/", "Гугл");
             config.Services[1] = google;
             return config;
         }
+
+        
 
         public static async Task<ConfigModel> GetConfigAsync()
         {

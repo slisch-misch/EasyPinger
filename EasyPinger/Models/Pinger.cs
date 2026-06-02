@@ -6,9 +6,8 @@
 
         public async Task PingAsync()
         {
-            var badResponse = false;
-
-            while (!badResponse)
+            var counter = config.TriesCounter;
+            while (counter > 0)
             {
                 foreach (var service in config.Services)
                 {
@@ -25,13 +24,13 @@
                         {
                             await Journal.Write(
                                 $"{DateTime.Now} - Не удалось пингануть {service.DisplayName}. Статус: {result.StatusCode}:{result.ReasonPhrase}");
-                            badResponse = true;
+                            counter--;
                         }
                     }
                     catch (Exception ex)
                     {
                         await Journal.Write($"{DateTime.Now} - Ошибка при пинге {service.DisplayName}: {ex.Message}");
-                        badResponse = true;
+                        counter--;
                     }
                 }
 

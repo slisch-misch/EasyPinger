@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace EasyPinger.Models
 {
@@ -7,11 +8,11 @@ namespace EasyPinger.Models
         public Service[] Services;
         public int TimeOut;
         public NotificationMode Mode;
+        public int TriesCounter { get; set; }
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
-
     }
 
     public class Service
@@ -23,8 +24,7 @@ namespace EasyPinger.Models
         }
 
         public string InternetAddress { get; set; }
-        public string DisplayName { get; set; }
-        public int TriesCounter { get; set; }
+        public string DisplayName { get; set; }        
     }
 
     enum NotificationMode
