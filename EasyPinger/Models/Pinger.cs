@@ -1,53 +1,41 @@
-﻿using EasyPinger.Helper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EasyPinger.Models
+﻿namespace EasyPinger.Models
 {
-    internal class Pinger
+    internal class Pinger(ConfigModel config)
     {
-        ConfigModel Config { get; set; }
-        bool BadResponse = false;
-
-        public Pinger()
-        {
-            Config = ConfigGenerator.GetConfigAsync().Result;
-        }
+        private static readonly HttpClient HttpClient = new();
 
         public async Task PingAsync()
         {
-            while (!BadResponse)
+            var badResponse = false;
+
+            while (!badResponse)
             {
-                using (var client = new HttpClient())
+                foreach (var service in config.Services)
                 {
-                    foreach (var service in Config.Services)
+                    try
                     {
-                        try
+                        using var result = await HttpClient.GetAsync(service.InternetAddress);
+
+                        if (result.IsSuccessStatusCode)
                         {
-                            using var result = await client.GetAsync(service.InternetAddress);
-                            
-                            if (result.IsSuccessStatusCode)
-                            {
-                                if (Config.Mode == NotificationMode.AllMessages)
-                                    Journal.Write(($"Успешно: {service.DisplayName} активен."));
-                            }
-                            else
-                            {
-                                Journal.Write(($"{DateTime.Now} - Не удалось пингануть {service.DisplayName}. Статус: {result.StatusCode}:{result.ReasonPhrase}"));
-                                BadResponse = true;
-                            }
+                            if (config.Mode == NotificationMode.AllMessages)
+                                await Journal.Write($"Успешно: {service.DisplayName} активен.");
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Journal.Write(($"{DateTime.Now} - Ошибка при пинге {service.DisplayName}: {ex.Message}"));
-                            BadResponse = true;
+                            await Journal.Write(
+                                $"{DateTime.Now} - Не удалось пингануть {service.DisplayName}. Статус: {result.StatusCode}:{result.ReasonPhrase}");
+                            badResponse = true;
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        await Journal.Write($"{DateTime.Now} - Ошибка при пинге {service.DisplayName}: {ex.Message}");
+                        badResponse = true;
+                    }
                 }
-                Thread.Sleep(Config.TimeOut);
+
+                await Task.Delay(config.TimeOut);
             }
         }
     }

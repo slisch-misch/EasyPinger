@@ -1,20 +1,15 @@
-﻿using EasyPinger.Models;
-using System.Text;
-using Newtonsoft.Json;
-using EasyPinger.Helper;
-using System.Net.NetworkInformation;
-using System.Net.Http;
-using System.Threading;
-
+﻿using EasyPinger.Helper;
+using EasyPinger.Models;
 
 namespace EasyPinger
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main()
         {
-            var ping = new Pinger();
-            ping.PingAsync().Wait();
+            var config = await ConfigGenerator.GetConfigAsync();
+            var pinger = new Pinger(config);
+            await pinger.PingAsync();
         }
     }
 }
