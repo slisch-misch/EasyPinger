@@ -15,6 +15,7 @@ namespace EasyPinger
             var badResponse = false;
             while (!badResponse)
             {
+                var journal = new Journal();
                 foreach (var service in config.Services)
                 {
                     using (Ping ping = new Ping())
@@ -25,17 +26,17 @@ namespace EasyPinger
 
                             if (reply.Status == IPStatus.Success)
                             {
-                                Console.WriteLine($"Успешно: {service.DisplayName} активен. Время ответа: {reply.RoundtripTime} мс");
+                                journal.Write(($"Успешно: {service.DisplayName} активен. Время ответа: {reply.RoundtripTime} мс"));
                             }
                             else
                             {
-                                Console.WriteLine($"Не удалось пингануть {service.DisplayName}. Статус: {reply.Status}");
+                                journal.Write(($"Не удалось пингануть {service.DisplayName}. Статус: {reply.Status}"));
                                 badResponse = true;
                             }
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Ошибка при пинге {service.DisplayName}: {ex.Message}");
+                            journal.Write(($"Ошибка при пинге {service.DisplayName}: {ex.Message}"));
                             badResponse = true;
                         }
                     }
