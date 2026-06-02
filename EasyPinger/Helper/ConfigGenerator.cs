@@ -15,7 +15,7 @@ namespace EasyPinger.Helper
         {
             var config = new ConfigModel();
             config.TimeOut = 60000;
-            config.Mode = NotificationMode.ErrorsOnly;
+            config.Mode = NotificationMode.AllMessages;
             config.Services = new Service[2];
             var yandex = new Service("https://ya.ru/", "Яндекс");
             config.Services[0] = yandex;

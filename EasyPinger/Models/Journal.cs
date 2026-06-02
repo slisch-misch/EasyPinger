@@ -22,7 +22,7 @@ namespace EasyPinger.Models
                     // преобразуем строку в байты
                     byte[] buffer = Encoding.Default.GetBytes(firstMessage);
                     // запись массива байтов в файл
-                    fstream.Write(buffer, 0, buffer.Length);
+                    fstream.WriteAsync(buffer, 0, buffer.Length);
                     Console.WriteLine("Журнал создан.");
                 }
             }
@@ -31,7 +31,7 @@ namespace EasyPinger.Models
                 Console.WriteLine("Журнал найден.");
                 string messageWithNewLine = message + Environment.NewLine;
                 byte[] buffer = Encoding.Default.GetBytes(messageWithNewLine);
-                fstream.Write(buffer, 0, buffer.Length);
+                fstream.WriteAsync(buffer, 0, buffer.Length);
             }
         }
     }
