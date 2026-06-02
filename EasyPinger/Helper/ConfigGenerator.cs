@@ -15,15 +15,16 @@ namespace EasyPinger.Helper
         {
             var config = new ConfigModel();
             config.TimeOut = 60000;
+            config.Mode = NotificationMode.ErrorsOnly;
             config.Services = new Service[2];
-            var yandex = new Service("ya.ru", "Яндекс");
+            var yandex = new Service("https://ya.ru/", "Яндекс");
             config.Services[0] = yandex;
-            var google = new Service("google.com", "Гугл");
+            var google = new Service("https://www.google.com/", "Гугл");
             config.Services[1] = google;
             return config;
         }
 
-        public static ConfigModel GetConfig()
+        public static async Task<ConfigModel> GetConfigAsync()
         {
             using (FileStream fstream = new FileStream("config.txt", FileMode.OpenOrCreate))
             {
@@ -35,7 +36,7 @@ namespace EasyPinger.Helper
                     // преобразуем строку в байты
                     byte[] buffer = Encoding.Default.GetBytes(config.ToString());
                     // запись массива байтов в файл
-                    fstream.Write(buffer, 0, buffer.Length);
+                    await fstream.WriteAsync(buffer, 0, buffer.Length);
                     Console.WriteLine("Конфигурация создана.");
                     return config;
                 }
