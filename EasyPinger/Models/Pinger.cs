@@ -2,6 +2,10 @@
 using MimeKit;
 using MailKit.Net.Smtp;
 using EasyPinger.Helper;
+using System.Collections.Generic;
+using System.Net.NetworkInformation;
+using System.Text;
+using MailKit;
 
 namespace EasyPinger.Models
 {
@@ -9,21 +13,22 @@ namespace EasyPinger.Models
     {
         private static readonly HttpClient HttpClient = new();
 
+        public static Dictionary<Service, int> servicesDownStatistics = [];
+
         public async Task PingAsync()
-        {            
-            var counter = config.TriesCounter;
-            while (counter > 0)
-            {
-                var unavailableService = new List<Service>();
+        {           
+            while (true)
+            {                
                 foreach (var service in config.Services)
-                {
+                {                    
                     try
                     {
                         using var result = await HttpClient.GetAsync(service.InternetAddress);
 
                         if (result.IsSuccessStatusCode)
                         {
-                            unavailableService.Remove(service);
+                            servicesDownStatistics.Remove(service);
+
                             if (config.NotificationMode == NotificationMode.AllMessages)
                                 await Journal.Write($"Успешно: {service.DisplayName} активен.");
                         }
@@ -31,19 +36,18 @@ namespace EasyPinger.Models
                         {
                             await Journal.Write(
                                 $"{DateTime.Now} - Не удалось пингануть {service.DisplayName}. Статус: {result.StatusCode}:{result.ReasonPhrase}");
-                            unavailableService.Add(service);
-                            counter--;
+                            AddOrUpdate(service);
                         }
                     }
                     catch (Exception ex)
                     {
                         await Journal.Write($"{DateTime.Now} - Ошибка при пинге {service.DisplayName}: {ex.Message}");
-                        unavailableService.Add(service);
-                        counter--;
+                        AddOrUpdate(service);
                     }
                 }
-                if (counter == 0)
-                    await SendMail(string.Join(Environment.NewLine, unavailableService.Select(c => c.DisplayName)));
+                var counter = servicesDownStatistics.Count > 0 ? servicesDownStatistics.Max(c => c.Value) : 0;
+                if (counter == config.TriesCounter)
+                    await SendMail(GetServiceDownStatistics());
 
                 if (config.IgnoreCounterMode == IgnoreCounterMode.Ignore)
                     counter = config.TriesCounter;
@@ -54,12 +58,6 @@ namespace EasyPinger.Models
 
         public async Task SendMail(string message)
         {
-            if (mailConfig == null)
-            {
-                Console.WriteLine("Отсутствует mail-конфигурация");
-                return;
-            }
-
             if (string.IsNullOrEmpty(mailConfig.SenderAddress) || string.IsNullOrEmpty(mailConfig.SenderPassword))
             {
                 Console.WriteLine("Отсутствует учётные данные отправителя");
@@ -76,7 +74,7 @@ namespace EasyPinger.Models
                 using (var client = new SmtpClient())
                 {
                     var smtp = MailConfigGenerator.GetSmtpInfo(mailConfig.SenderAddress);
-                    if (smtp == null || !smtp.HasValue)
+                    if (!smtp.HasValue)
                     {
                         Console.WriteLine($"SMTP не получен - {mailConfig.SenderAddress}");
                         return;
@@ -113,6 +111,22 @@ namespace EasyPinger.Models
             {
                 Console.WriteLine("Не удалось отправить письмо. Текст ошибки: " + ex.Message);
             }                          
+        }
+
+        public static void AddOrUpdate(Service service)
+        {
+            servicesDownStatistics.TryAdd(service, 0);
+            servicesDownStatistics[service]++;
+        }
+
+        public static string GetServiceDownStatistics()
+        {
+            var logBuilder = new StringBuilder();
+            foreach (var service in servicesDownStatistics) 
+            {
+                logBuilder.AppendLine($"{service.Key.DisplayName} упал {service.Value} раз{Environment.NewLine}");
+            }
+            return logBuilder.ToString();
         }
     }
 }

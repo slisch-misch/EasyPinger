@@ -1,4 +1,5 @@
 ﻿using EasyPinger.Models;
+using MailKit.Security;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -53,26 +54,26 @@ namespace EasyPinger.Helper
             }
         }
 
-        private static readonly Dictionary<string, (string SmtpHost, int Port)> SmtpMap =
+        private static readonly Dictionary<string, (string SmtpHost, int Port, SecureSocketOptions options)> SmtpMap =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            ["gmail.com"] = ("smtp.gmail.com", 587),
-            ["yandex.ru"] = ("smtp.yandex.ru", 465),
-            ["ya.ru"] = ("smtp.yandex.ru", 465),
-            ["mail.ru"] = ("smtp.mail.ru", 465),
-            ["inbox.ru"] = ("smtp.mail.ru", 465),
-            ["list.ru"] = ("smtp.mail.ru", 465),
-            ["bk.ru"] = ("smtp.mail.ru", 465),
-            ["outlook.com"] = ("smtp-mail.outlook.com", 587),
-            ["hotmail.com"] = ("smtp-mail.outlook.com", 587),
-            ["live.com"] = ("smtp-mail.outlook.com", 587),
-            ["yahoo.com"] = ("smtp.mail.yahoo.com", 465),
-            ["icloud.com"] = ("smtp.mail.me.com", 587),
-            ["rambler.ru"] = ("smtp.rambler.ru", 465),
-            ["aol.com"] = ("smtp.aol.com", 465),
+            ["gmail.com"] = ("smtp.gmail.com", 587, SecureSocketOptions.StartTls),
+            ["yandex.ru"] = ("smtp.yandex.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["ya.ru"] = ("smtp.yandex.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["mail.ru"] = ("smtp.mail.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["inbox.ru"] = ("smtp.mail.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["list.ru"] = ("smtp.mail.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["bk.ru"] = ("smtp.mail.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["outlook.com"] = ("smtp-mail.outlook.com", 587, SecureSocketOptions.StartTls),
+            ["hotmail.com"] = ("smtp-mail.outlook.com", 587, SecureSocketOptions.StartTls),
+            ["live.com"] = ("smtp-mail.outlook.com", 587, SecureSocketOptions.StartTls),
+            ["yahoo.com"] = ("smtp.mail.yahoo.com", 465, SecureSocketOptions.SslOnConnect),
+            ["icloud.com"] = ("smtp.mail.me.com", 587, SecureSocketOptions.StartTls),
+            ["rambler.ru"] = ("smtp.rambler.ru", 465, SecureSocketOptions.SslOnConnect),
+            ["aol.com"] = ("smtp.aol.com", 465, SecureSocketOptions.SslOnConnect),
         };
 
-        public static (string SmtpHost, int Port)? GetSmtpInfo(string email)
+        public static (string SmtpHost, int Port, SecureSocketOptions options)? GetSmtpInfo(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
                 return null;
