@@ -8,7 +8,8 @@ namespace EasyPinger
         static async Task Main()
         {
             var config = await ConfigGenerator.GetConfigAsync();
-            var pinger = new Pinger(config);
+            var mailConfig = await MailConfigGenerator.GetConfigAsync();
+            var pinger = new Pinger(config, mailConfig);
             await pinger.PingAsync();
         }
     }

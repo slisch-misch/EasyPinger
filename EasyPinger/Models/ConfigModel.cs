@@ -7,7 +7,8 @@ namespace EasyPinger.Models
     {
         public Service[] Services;
         public int TimeOut;
-        public NotificationMode Mode;
+        public NotificationMode NotificationMode;
+        public IgnoreCounterMode IgnoreCounterMode;
         public int TriesCounter { get; set; }
         public override string ToString()
         {
@@ -15,21 +16,21 @@ namespace EasyPinger.Models
         }
     }
 
-    public class Service
+    public class Service(string ip, string name)
     {
-        public Service(string ip, string name)
-        {
-            InternetAddress = ip;
-            DisplayName = name;
-        }
-
-        public string InternetAddress { get; set; }
-        public string DisplayName { get; set; }        
+        public string InternetAddress { get; set; } = ip;
+        public string DisplayName { get; set; } = name;
     }
 
     enum NotificationMode
     {
         AllMessages,
         ErrorsOnly
+    }
+
+    enum IgnoreCounterMode
+    {
+        NoIgnore,
+        Ignore
     }
 }

@@ -13,23 +13,24 @@ namespace EasyPinger.Helper
     {
         public static ConfigModel Generate()
         {
-            var config = new ConfigModel();
-            config.TimeOut = 60000;
-            config.Mode = NotificationMode.AllMessages;
-            config.Services = new Service[2];
-            config.TriesCounter = 3;
+            var config = new ConfigModel
+            {
+                TimeOut = 60000,
+                NotificationMode = NotificationMode.AllMessages,
+                IgnoreCounterMode = IgnoreCounterMode.Ignore,
+                Services = new Service[2],
+                TriesCounter = 3
+            };
             var yandex = new Service("https://ya.ru/", "Яндекс");
             config.Services[0] = yandex;
             var google = new Service("https://www.google.com/", "Гугл");
             config.Services[1] = google;
             return config;
-        }
-
-        
+        }        
 
         public static async Task<ConfigModel> GetConfigAsync()
         {
-            await using FileStream fstream = new FileStream("config.txt", FileMode.OpenOrCreate);
+            await using FileStream fstream = new("config.txt", FileMode.OpenOrCreate);
             if (fstream.Length == 0)
             {
                 var config = Generate();
