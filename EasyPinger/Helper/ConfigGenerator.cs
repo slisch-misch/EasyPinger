@@ -17,7 +17,6 @@ namespace EasyPinger.Helper
             {
                 TimeOut = 60000,
                 NotificationMode = NotificationMode.AllMessages,
-                IgnoreCounterMode = IgnoreCounterMode.Ignore,
                 Services = new Service[2],
                 TriesCounter = 3
             };

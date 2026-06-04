@@ -8,7 +8,6 @@ namespace EasyPinger.Models
         public Service[] Services;
         public int TimeOut;
         public NotificationMode NotificationMode;
-        public IgnoreCounterMode IgnoreCounterMode;
         public int TriesCounter { get; set; }
         public override string ToString()
         {
@@ -26,11 +25,5 @@ namespace EasyPinger.Models
     {
         AllMessages,
         ErrorsOnly
-    }
-
-    enum IgnoreCounterMode
-    {
-        NoIgnore,
-        Ignore
     }
 }

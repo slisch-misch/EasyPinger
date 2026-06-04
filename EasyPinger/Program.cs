@@ -6,10 +6,8 @@ namespace EasyPinger
     internal class Program
     {
         static async Task Main()
-        {
-            var config = await ConfigGenerator.GetConfigAsync();
-            var mailConfig = await MailConfigGenerator.GetConfigAsync();
-            var pinger = new Pinger(config, mailConfig);
+        {            
+            var pinger = new Pinger();
             await pinger.PingAsync();
         }
     }

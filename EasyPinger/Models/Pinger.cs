@@ -9,16 +9,19 @@ using MailKit;
 
 namespace EasyPinger.Models
 {
-    internal class Pinger(ConfigModel config, MailConfig mailConfig)
+    internal class Pinger()
     {
         private static readonly HttpClient HttpClient = new();
 
-        public static Dictionary<Service, int> servicesDownStatistics = [];
+        public static Dictionary<string, int> servicesDownStatistics = [];
 
         public async Task PingAsync()
         {           
             while (true)
-            {                
+            {
+                var config = await ConfigGenerator.GetConfigAsync();
+                
+
                 foreach (var service in config.Services)
                 {                    
                     try
@@ -27,7 +30,7 @@ namespace EasyPinger.Models
 
                         if (result.IsSuccessStatusCode)
                         {
-                            servicesDownStatistics.Remove(service);
+                            servicesDownStatistics.Remove(service.InternetAddress);
 
                             if (config.NotificationMode == NotificationMode.AllMessages)
                                 await Journal.Write($"Успешно: {service.DisplayName} активен.");
@@ -49,18 +52,17 @@ namespace EasyPinger.Models
                 if (counter == config.TriesCounter)
                     await SendMail(GetServiceDownStatistics());
 
-                if (config.IgnoreCounterMode == IgnoreCounterMode.Ignore)
-                    counter = config.TriesCounter;
-
                 await Task.Delay(config.TimeOut);
             }
         }
 
         public async Task SendMail(string message)
         {
+            var mailConfig = await MailConfigGenerator.GetConfigAsync();
+
             if (string.IsNullOrEmpty(mailConfig.SenderAddress) || string.IsNullOrEmpty(mailConfig.SenderPassword))
             {
-                Console.WriteLine("Отсутствует учётные данные отправителя");
+                Console.WriteLine("Отсутствуют учётные данные отправителя");
                 return;
             }
 
@@ -79,7 +81,7 @@ namespace EasyPinger.Models
                         Console.WriteLine($"SMTP не получен - {mailConfig.SenderAddress}");
                         return;
                     }
-                    await client.ConnectAsync(smtp.Value.SmtpHost, smtp.Value.Port, SecureSocketOptions.StartTlsWhenAvailable);
+                    await client.ConnectAsync(smtp.Value.SmtpHost, smtp.Value.Port, smtp.Value.options);
                     if (!client.IsConnected)
                     {
                         Console.WriteLine($"Не удалось подключиться - {mailConfig.SenderAddress}, {smtp.Value.SmtpHost} - {smtp.Value.Port}");
@@ -115,8 +117,8 @@ namespace EasyPinger.Models
 
         public static void AddOrUpdate(Service service)
         {
-            servicesDownStatistics.TryAdd(service, 0);
-            servicesDownStatistics[service]++;
+            servicesDownStatistics.TryAdd(service.InternetAddress, 0);
+            servicesDownStatistics[service.InternetAddress]++;
         }
 
         public static string GetServiceDownStatistics()
@@ -124,7 +126,7 @@ namespace EasyPinger.Models
             var logBuilder = new StringBuilder();
             foreach (var service in servicesDownStatistics) 
             {
-                logBuilder.AppendLine($"{service.Key.DisplayName} упал {service.Value} раз{Environment.NewLine}");
+                logBuilder.AppendLine($"{service} упал {service.Value} раз{Environment.NewLine}");
             }
             return logBuilder.ToString();
         }
